@@ -103,7 +103,7 @@
         /// <returns>JSON string presentation of the object</returns>
         public override string ToJson()
         {
-            return JsonConvert.SerializeObject(ActualInstance, {{classname}}.SerializerSettings);
+            return JsonSerializer.Serialize(ActualInstance, {{classname}}.SerializerOptions);
         }
 
         /// <summary>
@@ -123,7 +123,7 @@
 
             try
             {
-                new{{classname}} = new {{classname}}(JsonConvert.DeserializeObject<{{{.}}}>(jsonString, {{classname}}.SerializerSettings));
+                new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.SerializerOptions));
                 // deserialization is considered successful at this point if no exception has been thrown.
                 return new{{classname}};
             }

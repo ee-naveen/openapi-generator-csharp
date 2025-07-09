@@ -18,7 +18,7 @@ namespace {{packageName}}.Client.Auth
         readonly string _clientSecret;
         readonly string{{nrt?}} _scope;
         readonly string _grantType;
-        readonly JsonSerializerSettings _serializerSettings;
+        readonly JsonSerializerOptions _serializerOptions;
         readonly IReadableConfiguration _configuration;
 
         /// <summary>
@@ -30,14 +30,14 @@ namespace {{packageName}}.Client.Auth
             string clientSecret,
             string{{nrt?}} scope,
             OAuthFlow? flow,
-            JsonSerializerSettings serializerSettings,
+            JsonSerializerOptions serializerOptions,
             IReadableConfiguration configuration) : base("")
         {
             _tokenUrl = tokenUrl;
             _clientId = clientId;
             _clientSecret = clientSecret;
             _scope = scope;
-            _serializerSettings = serializerSettings;
+            _serializerOptions = serializerOptions;
             _configuration = configuration;
 
             switch (flow)
@@ -77,7 +77,7 @@ namespace {{packageName}}.Client.Auth
         async Task<string> GetToken()
         {
             var client = new RestClient(_tokenUrl,
-                configureSerialization: serializerConfig => serializerConfig.UseSerializer(() => new CustomJsonCodec(_serializerSettings, _configuration)));
+                configureSerialization: serializerConfig => serializerConfig.UseSerializer(() => new CustomJsonCodec(_serializerOptions, _configuration)));
 
             var request = new RestRequest()
                 .AddParameter("grant_type", _grantType)

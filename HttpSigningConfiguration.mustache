@@ -168,8 +168,8 @@ namespace {{packageName}}.Client
             string requestBody = string.Empty;
             if (requestOptions.Data != null)
             {
-                var serializerSettings = new JsonSerializerSettings();
-                requestBody = JsonConvert.SerializeObject(requestOptions.Data, serializerSettings);
+                var serializerOptions = new JsonSerializerOptions();
+                requestBody = JsonSerializer.Serialize(requestOptions.Data, serializerOptions);
             }
 
             if (HashAlgorithm == HashAlgorithmName.SHA256)
