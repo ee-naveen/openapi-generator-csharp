@@ -1,5 +1,8 @@
 {{>partial_header}}
-using Newtonsoft.Json.Converters;
+using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Globalization;
 
 namespace {{packageName}}.Client
 {
@@ -7,15 +10,45 @@ namespace {{packageName}}.Client
     /// Formatter for 'date' openapi formats ss defined by full-date - RFC3339
     /// see https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md#data-types
     /// </summary>
-    public class OpenAPIDateConverter : IsoDateTimeConverter
+    public class OpenAPIDateConverter : JsonConverter<DateTime>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="OpenAPIDateConverter" /> class.
+        /// The date format to use for serialization and deserialization.
         /// </summary>
-        public OpenAPIDateConverter()
+        public const string DateFormat = "yyyy-MM-dd";
+
+        /// <summary>
+        /// Reads and converts the JSON to a DateTime.
+        /// </summary>
+        /// <param name="reader">The reader.</param>
+        /// <param name="typeToConvert">The type to convert.</param>
+        /// <param name="options">The serializer options.</param>
+        /// <returns>The converted value.</returns>
+        public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            // full-date   = date-fullyear "-" date-month "-" date-mday
-            DateTimeFormat = "yyyy-MM-dd";
+            var value = reader.GetString();
+            if (string.IsNullOrEmpty(value))
+            {
+                return default;
+            }
+
+            if (DateTime.TryParseExact(value, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            {
+                return date;
+            }
+
+            throw new JsonException($"Unable to convert \"{value}\" to DateTime with format \"{DateFormat}\".");
+        }
+
+        /// <summary>
+        /// Writes a DateTime as a JSON string.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="options">The serializer options.</param>
+        public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue(value.ToString(DateFormat, CultureInfo.InvariantCulture));
         }
     }
 }
