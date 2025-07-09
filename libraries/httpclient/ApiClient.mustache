@@ -390,7 +390,7 @@ namespace {{packageName}}.Client
                     }
                     else
                     {
-                        var serializer = new CustomJsonCodec(SerializerSettings, configuration);
+                        var serializer = new CustomJsonCodec(SerializerOptions, configuration);
                         request.Content = new StringContent(serializer.Serialize(options.Data), new UTF8Encoding(),
                             "application/json");
                     }
@@ -465,7 +465,7 @@ namespace {{packageName}}.Client
         {
             CancellationTokenSource timeoutTokenSource = null;
             CancellationTokenSource finalTokenSource = null;
-            var deserializer = new CustomJsonCodec(SerializerSettings, configuration);
+            var deserializer = new CustomJsonCodec(SerializerOptions, configuration);
             var finalToken = cancellationToken;
 
             try

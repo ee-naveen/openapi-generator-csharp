@@ -151,7 +151,7 @@
 
             try
             {
-                // if it does not contains "AdditionalProperties", use SerializerSettings to deserialize
+                // if it does not contains "AdditionalProperties", use SerializerOptions to deserialize
                 if (typeof({{{.}}}).GetProperty("AdditionalProperties") == null)
                 {
                     new{{classname}} = new {{classname}}(JsonSerializer.Deserialize<{{{.}}}>(jsonString, {{classname}}.SerializerOptions));

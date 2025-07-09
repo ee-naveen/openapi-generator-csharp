@@ -465,13 +465,13 @@ namespace {{packageName}}.Client
                     configuration.OAuthClientSecret,
                     configuration.OAuthScope,
                     configuration.OAuthFlow,
-                    SerializerSettings,
+                    SerializerOptions,
                     configuration);
             }
 
             {{/hasOAuthMethods}}
             using (RestClient client = new RestClient(clientOptions,
-                configureSerialization: serializerConfig => serializerConfig.UseSerializer(() => new CustomJsonCodec(SerializerSettings, configuration))))
+                configureSerialization: serializerConfig => serializerConfig.UseSerializer(() => new CustomJsonCodec(SerializerOptions, configuration))))
             {
                 InterceptRequest(request);
 
