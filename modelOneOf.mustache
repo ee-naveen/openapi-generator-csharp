@@ -249,72 +249,64 @@
     /// <summary>
     /// Custom JSON converter for {{classname}}
     /// </summary>
-    public class {{classname}}JsonConverter : JsonConverter
+    public class {{classname}}JsonConverter : JsonConverter<{{classname}}>
     {
         /// <summary>
         /// To write the JSON string
         /// </summary>
         /// <param name="writer">JSON writer</param>
         /// <param name="value">Object to be converted into a JSON string</param>
-        /// <param name="serializer">JSON Serializer</param>
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        /// <param name="options">JSON serializer options</param>
+        public override void Write(Utf8JsonWriter writer, {{classname}} value, JsonSerializerOptions options)
         {
-            writer.WriteRawValue((string)(typeof({{classname}}).GetMethod("ToJson").Invoke(value, null)));
+            writer.WriteRawValue(value.ToJson(), false);
         }
 
         /// <summary>
         /// To convert a JSON string into an object
         /// </summary>
         /// <param name="reader">JSON reader</param>
-        /// <param name="objectType">Object type</param>
-        /// <param name="existingValue">Existing value</param>
-        /// <param name="serializer">JSON Serializer</param>
+        /// <param name="typeToConvert">Object type</param>
+        /// <param name="options">JSON serializer options</param>
         /// <returns>The object converted from the JSON string</returns>
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override {{classname}} Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             switch(reader.TokenType) 
             {
                 {{#composedSchemas.oneOf}}
                 {{^vendorExtensions.x-duplicated-data-type}}
                 {{#isInteger}}
-                case JsonToken.Integer: 
-                    return new {{classname}}(Convert.ToInt32(reader.Value));
+                case JsonTokenType.Number: 
+                    return new {{classname}}(reader.GetInt32());
                 {{/isInteger}}
                 {{#isNumber}}
-                case JsonToken.Float: 
-                    return new {{classname}}(Convert.ToDecimal(reader.Value));
+                case JsonTokenType.Number: 
+                    return new {{classname}}(reader.GetDecimal());
                 {{/isNumber}}
                 {{#isString}}
-                case JsonToken.String: 
-                    return new {{classname}}(Convert.ToString(reader.Value));
+                case JsonTokenType.String: 
+                    return new {{classname}}(reader.GetString());
                 {{/isString}}
                 {{#isBoolean}}
-                case JsonToken.Boolean: 
-                    return new {{classname}}(Convert.ToBoolean(reader.Value));
+                case JsonTokenType.True:
+                case JsonTokenType.False: 
+                    return new {{classname}}(reader.GetBoolean());
                 {{/isBoolean}}
                 {{#isDate}}
-                case JsonToken.Date: 
-                    return new {{classname}}(Convert.ToDateTime(reader.Value));
+                case JsonTokenType.String: 
+                    return new {{classname}}(reader.GetDateTime());
                 {{/isDate}}
                 {{/vendorExtensions.x-duplicated-data-type}}
                 {{/composedSchemas.oneOf}}
-                case JsonToken.StartObject:
-                    return {{classname}}.FromJson(JObject.Load(reader).ToString(Formatting.None));
-                case JsonToken.StartArray:
-                    return {{classname}}.FromJson(JArray.Load(reader).ToString(Formatting.None));
+                case JsonTokenType.StartObject:
+                case JsonTokenType.StartArray:
+                    using (JsonDocument document = JsonDocument.ParseValue(ref reader))
+                    {
+                        return {{classname}}.FromJson(document.RootElement.GetRawText());
+                    }
                 default:
-                    return null;
+                    throw new JsonException($"Unexpected token type: {reader.TokenType}");
             }
-        }
-
-        /// <summary>
-        /// Check if the object can be converted
-        /// </summary>
-        /// <param name="objectType">Object type</param>
-        /// <returns>True if the object can be converted</returns>
-        public override bool CanConvert(Type objectType)
-        {
-            return false;
         }
     }
 {{/model}}
